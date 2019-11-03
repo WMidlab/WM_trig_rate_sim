@@ -1,6 +1,10 @@
 from random import *
 import matplotlib.pyplot as plt
 import numpy as np
+import os
+
+
+fileToSave = '1hr.txt'
 
 darkRate_Hz = 10e3
 darkPeriod_ns = 1.0/darkRate_Hz*1e9
@@ -13,7 +17,9 @@ numWindows = 255
 window_buffer=np.zeros((numWindows,), dtype=np.int)
 
 timeNow_ns = 0
-stopTime_ns = 1e9
+one_sec = 1e9
+#stopTime_ns = one_sec
+stopTime_ns = one_sec*60*60
 queue = []
 
 times   = []
@@ -80,7 +86,7 @@ while timeNow_ns < stopTime_ns and len(queue) < numWindows:
         times.append(timeNow_ns)
         lengths.append(len(queue))
     lastLength = len(queue)
-    if step%1000000 == 0:
+    #if step%10000000 == 0:
         #print("time now (ns):")
         #print(timeNow_ns)
         #print("buffer head:")
@@ -95,8 +101,8 @@ while timeNow_ns < stopTime_ns and len(queue) < numWindows:
         #plt.plot(times, lengths)
         #plt.show()
 
-        print("run %")
-        print(float(timeNow_ns)/stopTime_ns*100)
+        #print("run %")
+        #print(float(timeNow_ns)/stopTime_ns*100)
             
     timeNow_ns += clockTick_ns
     if queue_count > 0 :
@@ -125,9 +131,13 @@ print("buffer tail:")
 print(buffer_index_tail)
 print("Total Event count:")
 print(event_count)
-event_frequency =event_count/stopTime_ns*1e9
+event_frequency =event_count/stopTime_ns*1e12
 print("Event Rate (Hz):")
 print(event_frequency)
+
+
+
+np.savetxt(os.path.abspath(fileToSave), np.array(lengths))
 
 plt.clf
 plt.subplot(211)
@@ -139,7 +149,11 @@ plt.title('Memory Buffer Utilization over Time due to 4 PMT 10kHz noise')
 
 plt.subplot(212)
 plt.hist(lengths,25)
-plt.xlabel('% utilization')
+plt.xlabel('Memory Buffer Capacity %')
 plt.ylabel('Frequency')
-plt.title('Frequency of % Utilization')
+plt.title('Memory Buffer Utilization')
 plt.show()
+
+plt.stem(window_buffer)
+plt.show()
+
